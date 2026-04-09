@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	if err := storage.Init(); err != nil {
+	repo, err := storage.NewSQLiteRepository()
+	if err != nil {
 		log.Fatalf("storage init: %v", err)
 	}
 
@@ -21,7 +22,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterRatesServiceServer(grpcServer, &ratesServer{})
+	pb.RegisterRatesServiceServer(grpcServer, NewRatesServer(repo))
 
 	log.Println("gRPC server listening on :50051")
 	if err := grpcServer.Serve(lis); err != nil {

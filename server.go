@@ -15,6 +15,11 @@ const apiURL = "https://grinex.io/api/v1/spot/depth?symbol=usdta7a5"
 
 type ratesServer struct {
 	pb.UnimplementedRatesServiceServer
+	repo storage.Repository
+}
+
+func NewRatesServer(repo storage.Repository) *ratesServer {
+	return &ratesServer{repo: repo}
 }
 
 type orderBookEntry struct {
@@ -48,7 +53,7 @@ func (s *ratesServer) GetRates(_ context.Context, _ *pb.GetRatesRequest) (*pb.Ge
 	bestAsk := book.Asks[0].Price
 	bestBid := book.Bids[0].Price
 
-	id, err := storage.InsertRate(book.Timestamp, bestAsk, bestBid)
+	id, err := s.repo.InsertRate(book.Timestamp, bestAsk, bestBid)
 	if err != nil {
 		return nil, fmt.Errorf("db insert failed: %w", err)
 	}
