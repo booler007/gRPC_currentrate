@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RatesService_GetRates_FullMethodName = "/rates.RatesService/GetRates"
+	RatesService_GetRates_FullMethodName    = "/rates.RatesService/GetRates"
+	RatesService_HealthCheck_FullMethodName = "/rates.RatesService/HealthCheck"
 )
 
 // RatesServiceClient is the client API for RatesService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RatesServiceClient interface {
 	GetRates(ctx context.Context, in *GetRatesRequest, opts ...grpc.CallOption) (*GetRatesResponse, error)
+	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
 
 type ratesServiceClient struct {
@@ -47,11 +49,22 @@ func (c *ratesServiceClient) GetRates(ctx context.Context, in *GetRatesRequest, 
 	return out, nil
 }
 
+func (c *ratesServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(HealthCheckResponse)
+	err := c.cc.Invoke(ctx, RatesService_HealthCheck_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RatesServiceServer is the server API for RatesService service.
 // All implementations must embed UnimplementedRatesServiceServer
 // for forward compatibility.
 type RatesServiceServer interface {
 	GetRates(context.Context, *GetRatesRequest) (*GetRatesResponse, error)
+	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedRatesServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedRatesServiceServer struct{}
 
 func (UnimplementedRatesServiceServer) GetRates(context.Context, *GetRatesRequest) (*GetRatesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRates not implemented")
+}
+func (UnimplementedRatesServiceServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method HealthCheck not implemented")
 }
 func (UnimplementedRatesServiceServer) mustEmbedUnimplementedRatesServiceServer() {}
 func (UnimplementedRatesServiceServer) testEmbeddedByValue()                      {}
@@ -104,6 +120,24 @@ func _RatesService_GetRates_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RatesService_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthCheckRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RatesServiceServer).HealthCheck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RatesService_HealthCheck_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RatesServiceServer).HealthCheck(ctx, req.(*HealthCheckRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RatesService_ServiceDesc is the grpc.ServiceDesc for RatesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var RatesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRates",
 			Handler:    _RatesService_GetRates_Handler,
+		},
+		{
+			MethodName: "HealthCheck",
+			Handler:    _RatesService_HealthCheck_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

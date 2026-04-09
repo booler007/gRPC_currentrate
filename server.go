@@ -34,6 +34,10 @@ type depthResponse struct {
 	Bids      []orderBookEntry `json:"bids"`
 }
 
+func (s *ratesServer) HealthCheck(_ context.Context, _ *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+	return &pb.HealthCheckResponse{Status: "ok"}, nil
+}
+
 func (s *ratesServer) GetRates(_ context.Context, _ *pb.GetRatesRequest) (*pb.GetRatesResponse, error) {
 	client := resty.New()
 	resp, err := client.R().Get(apiURL)

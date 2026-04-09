@@ -6,6 +6,7 @@ option go_package = "github.com/booler007/gRPC_currentrate/pb";
 
 service RatesService {
   rpc GetRates(GetRatesRequest) returns (GetRatesResponse);
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }
 
 message GetRatesRequest {}
@@ -15,4 +16,10 @@ message GetRatesResponse {
   int64  timestamp = 2;
   string best_ask  = 3;
   string best_bid  = 4;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
 }
