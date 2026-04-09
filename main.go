@@ -24,8 +24,24 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterRatesServiceServer(grpcServer, NewRatesServer(repo))
 
-	log.Println("gRPC server listening on :50051")
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("serve: %v", err)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		log.Println("gRPC server listening on :50051")
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("serve: %v", err)
+		}
+	}()
+
+	<-quit
+	log.Println("shutting down...")
+
+	grpcServer.GracefulStop()
+
+	if err := repo.Close(); err != nil {
+		log.Printf("db close: %v", err)
 	}
+
+	log.Println("shutdown complete")
 }
